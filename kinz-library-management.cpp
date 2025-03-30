@@ -28,7 +28,6 @@ string toLowercase(string str) {
     return str;
 }
 
-// Custom dynamic string array implementation to replace vector<string>
 class StringArray {
 private:
     string* data;
