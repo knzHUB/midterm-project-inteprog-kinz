@@ -2,7 +2,6 @@
 #include <iomanip>
 #include <cctype>
 #include <string>
-#include <vector>
 
 using namespace std;
 
@@ -29,12 +28,96 @@ string toLowercase(string str) {
     return str;
 }
 
+// Custom dynamic string array implementation to replace vector<string>
+class StringArray {
+private:
+    string* data;
+    size_t size;
+    size_t capacity;
+    
+public:
+    // Constructor
+    StringArray() : data(nullptr), size(0), capacity(0) {}
+    
+    // Copy constructor
+    StringArray(const StringArray& other) {
+        size = other.size;
+        capacity = other.capacity;
+        if (capacity > 0) {
+            data = new string[capacity];
+            for (size_t i = 0; i < size; ++i) {
+                data[i] = other.data[i];
+            }
+        } else {
+            data = nullptr;
+        }
+    }
+    
+    // Assignment operator
+    StringArray& operator=(const StringArray& other) {
+        if (this != &other) {
+            delete[] data;
+            size = other.size;
+            capacity = other.capacity;
+            if (capacity > 0) {
+                data = new string[capacity];
+                for (size_t i = 0; i < size; ++i) {
+                    data[i] = other.data[i];
+                }
+            } else {
+                data = nullptr;
+            }
+        }
+        return *this;
+    }
+    
+    // Destructor
+    ~StringArray() {
+        delete[] data;
+    }
+    
+    // Add an element
+    void push_back(const string& value) {
+        if (size >= capacity) {
+            size_t newCapacity = capacity == 0 ? 1 : capacity * 2;
+            string* newData = new string[newCapacity];
+            for (size_t i = 0; i < size; ++i) {
+                newData[i] = data[i];
+            }
+            delete[] data;
+            data = newData;
+            capacity = newCapacity;
+        }
+        data[size++] = value;
+    }
+    
+    // Access element
+    string& operator[](size_t index) {
+        return data[index];
+    }
+    
+    // Const access element
+    const string& operator[](size_t index) const {
+        return data[index];
+    }
+    
+    // Get size
+    size_t length() const {
+        return size;
+    }
+    
+    // Check if empty
+    bool empty() const {
+        return size == 0;
+    }
+};
+
 class Book {
 private:
     string id;
     string isbn;
     string title;
-    vector<string> authors;
+    StringArray authors;
     string edition;
     string publication;
     string category;
@@ -43,7 +126,7 @@ public:
     // Constructors
     Book() {}
     Book(const string& id, const string& isbn, const string& title,
-         const vector<string>& authors, const string& edition,
+         const StringArray& authors, const string& edition,
          const string& publication, const string& category)
         : id(id), isbn(isbn), title(title), authors(authors), 
           edition(edition), publication(publication), category(category) {}
@@ -52,12 +135,12 @@ public:
     string getId() const { return id; }
     string getValidIsbn() const { return isbn; }
     string getTitle() const { return title; }
-    vector<string> getAuthors() const { return authors; }
+    StringArray getAuthors() const { return authors; }
     string getAuthorsAsString() const {
         string result = "";
-        for (size_t i = 0; i < authors.size(); ++i) {
+        for (size_t i = 0; i < authors.length(); ++i) {
             result += authors[i];
-            if (i < authors.size() - 1) {
+            if (i < authors.length() - 1) {
                 result += ", ";
             }
         }
@@ -70,7 +153,7 @@ public:
     // Setter methods (excluding ID)
     void setIsbn(const string& newIsbn) { isbn = newIsbn; }
     void setTitle(const string& newTitle) { title = newTitle; }
-    void setAuthors(const vector<string>& newAuthors) { authors = newAuthors; }
+    void setAuthors(const StringArray& newAuthors) { authors = newAuthors; }
     void setEdition(const string& newEdition) { edition = newEdition; }
     void setPublication(const string& newPublication) { publication = newPublication; }
     void setCategory(const string& newCategory) { category = newCategory; }
@@ -310,8 +393,8 @@ private:
         return id;
     }
     
-    vector<string> getMultipleAuthors() {
-        vector<string> authors;
+    StringArray getMultipleAuthors() {
+        StringArray authors;
         int authorCount = 0;
         bool validCount = false;
         
@@ -413,7 +496,7 @@ public:
             string id = getValidId();
             string isbn = getValidIsbn(); 
             string title = getValidInput("Enter Title: ");
-            vector<string> authors = getMultipleAuthors();
+            StringArray authors = getMultipleAuthors();
             string edition = getValidInput("Enter Edition: ");
             string publication = getValidPublication();
     
@@ -468,7 +551,7 @@ public:
                 // Update authors
                 cout << "Update authors? ";
                 if (getYesNoInput("(yes/no): ")) {
-                    vector<string> newAuthors = getMultipleAuthors();
+                    StringArray newAuthors = getMultipleAuthors();
                     book.setAuthors(newAuthors);
                 }
                 
